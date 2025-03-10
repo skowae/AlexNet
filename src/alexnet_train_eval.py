@@ -115,7 +115,7 @@ def train_alexnet(alex_net_version, num_classes, train_loader, val_loader,
 
             # print statistics
             run_loss += loss.item()
-            train_loss += loss.item()
+            train_loss += loss.item() * images.shape[0]
 
             if batch_idx % 200 == 199:  # print every 200 mini-batches
                 print(f'[{epoch + 1}, {batch_idx + 1:5d}] loss: {run_loss / 200:.3f}')
@@ -123,14 +123,14 @@ def train_alexnet(alex_net_version, num_classes, train_loader, val_loader,
 
 
         # Save the accuracy
-        train_accuracy = correct / len(train_loader)
+        train_accuracy = correct / len(train_loader.dataset)
         train_accuracies.append(train_accuracy)
 
-        print(f'\Train Accuracy: {correct}/{len(train_loader.dataset)} ({(train_accuracy * 100):.06f}%)\n')
+        print(f'\nTrain Accuracy: {correct}/{len(train_loader.dataset)} ({(100. * correct / len(test_loader.dataset)):.06f}%)\n')
 
 
         # Normalize the training loss
-        train_loss /= len(train_loader)
+        train_loss /= len(train_loader.dataset)
         # Add results to the training loss
         train_losses.append(train_loss)
     
@@ -142,13 +142,14 @@ def train_alexnet(alex_net_version, num_classes, train_loader, val_loader,
             # Load the validation images with no labels
             for images, labels in val_loader:
                 images = images.to(device)
+                labels = labels.to(device)
 
                 # Run the model
                 outputs = model(images)
 
                 # Conduct back prop
                 loss = criterion(outputs, labels)
-                val_loss += loss.item()
+                val_loss += loss.item() * images.shape[0]
 
                 # Obtain the predicted class
                 _, pred = torch.max(outputs.data, 1)
@@ -156,10 +157,10 @@ def train_alexnet(alex_net_version, num_classes, train_loader, val_loader,
                 correct += (pred == labels).sum().item()
         
         # Save the accuracy
-        val_accuracy = correct / len(val_loader)
+        val_accuracy = correct / len(val_loader.dataset)
         val_accuracies.append(val_accuracy)
 
-        print(f'\Val Accuracy: {correct}/{len(val_loader)} ({(val_accuracy * 100):.06f}%)\n')
+        print(f'\nVal Accuracy: {correct}/{len(val_loader.dataset)} ({(val_accuracy * 100):.06f}%)\n')
 
 
         # Normalize the loss
@@ -174,13 +175,14 @@ def train_alexnet(alex_net_version, num_classes, train_loader, val_loader,
             # Load the validation images with no labels
             for images, labels in test_loader:
                 images = images.to(device)
+                labels = labels.to(device)
 
                 # Run the model
                 outputs = model(images)
 
                 # Conduct back prop
                 loss = criterion(outputs, labels)
-                test_loss += loss.item()
+                test_loss += loss.item() * images.shape[0]
 
                 # Obtain the predicted class
                 _, pred = torch.max(outputs.data, 1)
@@ -188,11 +190,11 @@ def train_alexnet(alex_net_version, num_classes, train_loader, val_loader,
                 correct += (pred == labels).sum().item()
         
         # Save the accuracy
-        test_accuracy = correct / len(test_loader)
+        test_accuracy = correct / len(test_loader.dataset)
         test_accuracies.append(test_accuracy)
 
         # Normalize the loss
-        test_loss  /= len(test_loader)
+        test_loss  /= len(test_loader.dataset)
         test_losses.append(test_loss)
 
         print(
@@ -244,6 +246,7 @@ def test(model, classes, test_loader, device='cpu') :
 
     test_loss = 0
     correct = 0
+    model.eval()
     with torch.no_grad():
         for data in test_loader:
             inputs, labels = data
@@ -461,7 +464,7 @@ def main():
     
     # Define hyperparameters
     batch_size = 16
-    epochs = 75
+    epochs = 2
     learning_rate = 1e-4
     
 
