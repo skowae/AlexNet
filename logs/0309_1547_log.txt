@@ -1,0 +1,10 @@
+tensor([1.], device='mps:0')
+
+Training AlexNet version: AlexNet
+Epoch [1/1], Train Loss: 2.2645, Val Loss: {val_loss:.4f}, Test Loss: {test_loss:.4f}
+Model saved as ../results/AlexNet/weights/model_final.pt
+Running inference on AlexNet
+Accuracy: 2556/10000 (25.560000%)
+Making the confusion matrix AlexNet
+confusion matrix saved
+Producing PR for AlexNet
